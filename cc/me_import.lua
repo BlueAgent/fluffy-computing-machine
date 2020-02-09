@@ -80,7 +80,7 @@ function loopSuck()
       local curr = v['i']
       hist[curr] = hist[curr] + num
     end
-    os.sleep(0.5)
+    os.sleep(suckDelay)
   end
 end
 
@@ -101,7 +101,7 @@ function loopDisplay()
       end
       column = column + columnWidth + 1
     end
-    os.sleep(suckDelay)
+    os.sleep(0.5)
   end
 end
 

@@ -1,8 +1,8 @@
 local me = peripheral.find('tileinterface')
-local suckDelay = 0.5
+local suckDelay = 0
 -- return an array of import attempts (I think up to 9)
 function getImportCommands()
-  local direction = 'WEST'
+  local direction = 'DOWN'
   return {
     {dir=direction, slot=8},
     {dir=direction, slot=9}
@@ -13,8 +13,11 @@ local histories = {
   {name='1s', size=1},
   {name='10s', size=10},
   {name='1m', size=60},
-  {name='10m', size=60*10}
+  {name='10m', size=60*10},
+  {name='1h', size=60*60},
+  {name='6h', size=60*60*6}
 }
+
 for _, v in pairs(histories) do
   local hist = {}
   for i=1, v['size'] do

@@ -21,20 +21,22 @@ elseif not coil then
   error("Coil missing")
 end
 
-local previousStacks
+local previousStacks = {}
+local stuckSlots = {8,9}
+local STUCK_STACK_LIMIT = 8
 function isStuck(stacks)
   local pStacks = previousStacks
   previousStacks = stacks
   if stacks then
     same = 0
-    for slot=2,9 do
+    for _, slot in pairs(stuckSlots) do
       local prev = pStacks[slot]
       local curr = stacks[slot]
-      if (not prev and not curr) or (prev and curr and prev.id == curr.id and prev.amt == curr.amt) then
+      if prev and curr and prev.id == curr.id and (prev.amt == curr.amt or curr.amt > STUCK_STACK_LIMIT) then
         same = same + 1
       end
     end
-    if same == 8 then
+    if same == table.getn(stuckSlots) then
       return true
     end
   end
@@ -50,34 +52,40 @@ function hasWork(stacks)
   return false
 end
 
+local shouldRunLast = false
 local stuckCounter = 0
+local STUCK_LIMIT = 2
 function hasAndCanWork()
   local stacks = ex.getAllStacks()
+  if not stacks then stacks = {} end
   if hasWork(stacks) then
     if isStuck(stacks) then
-      if stuckCounter == 0 then
+      if stuckCounter == STUCK_LIMIT then
         print("Stuck")
       end
       stuckCounter = stuckCounter + 1
     else
-      if stuckCounter != 0 then
+      if stuckCounter ~= 0 then
         print("Unstuck after " .. stuckCounter .. " cycles")
         stuckCounter = 0
       end
     end
-    return stuckCounter == 0
+    local shouldRun = stuckCounter < STUCK_LIMIT
+    if shouldRun ~= shouldRunLast then
+      shouldRunLast = shouldRun
+      if shouldRun then
+        print("Starting Extractor")
+      else
+        print("Stopping Extractor")
+      end
+    end
+    return shouldRun
   end
   return false
 end
 
-local wasRunning = false
 while true do
-  os.sleep(1)
   if hasAndCanWork() then
-    if not wasRunning then
-      print("Starting Extractor")
-    end
-    wasRunning = true
     coil.setSpeed(4096)
     cvt.setRatio(-2)
     coil.setTorque(4096)
@@ -92,9 +100,6 @@ while true do
     coil.setSpeed(0)
     coil.setTorque(0)
     cvt.setRatio(0)
-    if wasRunning then
-      print("Stopped Extractor")
-    end
-    wasRunning = false
+    os.sleep(1)
   end
 end

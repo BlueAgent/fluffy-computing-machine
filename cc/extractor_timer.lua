@@ -24,11 +24,28 @@ function loopMain()
   end
 end
 
-function hasAndCanWork()
-  local stacks = ex.getAllStacks()
-  if stacks[8] and stacks[8].all().qty >=63 then
-    return false
+local previousStacks = {}
+local stuckSlots = {8,9}
+function isStuck(stacks)
+  local pStacks = previousStacks
+  previousStacks = stacks
+  if stacks then
+    same = 0
+    for _, slot in pairs(stuckSlots) do
+      local prev = pStacks[slot]
+      local curr = stacks[slot]
+      if prev and curr and prev.id == curr.id and prev.amt == curr.amt then
+        same = same + 1
+      end
+    end
+    if same == table.getn(stuckSlots) then
+      return true
+    end
   end
+  return false
+end
+
+function hasWork(stacks)
   for slot=1,4 do
     if stacks[slot] then
       return true
@@ -37,41 +54,58 @@ function hasAndCanWork()
   return false
 end
 
+local shouldRunLast = false
+local stuckCounter = 0
+local STUCK_LIMIT = 3
+function hasAndCanWork()
+  local stacks = ex.getAllStacks()
+  if not stacks then stacks = {} end
+  if hasWork(stacks) then
+    if isStuck(stacks) then
+      if stuckCounter == STUCK_LIMIT then
+        print("Stuck")
+      end
+      stuckCounter = stuckCounter + 1
+    else
+      if stuckCounter ~= 0 then
+        print("Unstuck after " .. stuckCounter .. " cycles")
+        stuckCounter = 0
+      end
+    end
+    local shouldRun = stuckCounter < STUCK_LIMIT
+    if shouldRun ~= shouldRunLast then
+      shouldRunLast = shouldRun
+      if shouldRun then
+        print("Starting Extractor")
+      else
+        print("Stopping Extractor")
+      end
+    end
+    return shouldRun
+  end
+  return false
+end
+
 function loopSetCVTCoil()
-  local mult = 8/20
-  local stateMap = {
-    torque = {time = 1.0  * mult, speed = 4096, torque = 4096, ratio = -2, next = "speed"},
-    speed  = {time = 1.5  * mult, speed = 4096, torque = 512 , ratio = 32, next = "last"},
-    last   = {time = 1.75 * mult, speed = 4096, torque = 4096, ratio =  0, next = "torque"},
-    off    = {time = 80 / 20    , speed =    0, torque =    0, ratio =  0, next = "torque"}
-  }
-  local state = stateMap['off']
   while running do
-    -- coil.setSpeed(state.speed)
-    -- coil.setTorque(state.torque)
-    -- cvt.setRatio(state.ratio)
-    -- os.sleep(state.time)
-    -- if hasAndCanWork() then
-    --   state = stateMap[state.next]
-    -- else
-    --   state = stateMap["off"]
-    -- end
+    if hasAndCanWork() then
+      coil.setSpeed(4096)
+      cvt.setRatio(-2)
+      coil.setTorque(4096)
+      os.sleep(0.4)
+      cvt.setRatio(32)
+      coil.setTorque(512)
+      os.sleep(0.6)
+      cvt.setRatio(1)
+      coil.setTorque(4096)
+      os.sleep(0.7)
+    else
+      coil.setSpeed(0)
+      coil.setTorque(0)
+      cvt.setRatio(0)
+      os.sleep(1)
+    end
   end
 end
 
-function loopSetCVTCoilDumb()
-  coil.setSpeed(4096)
-  while running do
-    cvt.setRatio(-2)
-    coil.setTorque(4096)
-    os.sleep(0.4)
-    cvt.setRatio(32)
-    coil.setTorque(512)
-    os.sleep(0.6)
-    cvt.setRatio(1)
-    coil.setTorque(4096)
-    os.sleep(0.7)
-  end
-end
-
-parallel.waitForAll(loopSetCVTCoilDumb)
+parallel.waitForAll(loopMain, loopSetCVTCoil)

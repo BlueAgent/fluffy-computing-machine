@@ -35,6 +35,7 @@ local CONSTELLATION_PHASE_RANGES = {
   bootes    = {from = MoonPhase.FULL, to = MoonPhase.NEW},
   fornax    = {from = MoonPhase.WANING_3_4, to = MoonPhase.WAXING_1_4},
 }
+local MINOR_CONSTELLATION_SHIFT = 1
 
 -- Constants
 local TICKS_PER_DAY = 24000
@@ -117,6 +118,8 @@ function Minor:new(name, color, moonPhases)
     doesShowUp = function(dayTime)
       targetMoonPhase = getMoonPhase(dayTime)
       for _, moonPhase in pairs(moonPhases) do
+        -- Minor constellations are shifted but they have the same relative appearences
+        moonPhase = ((moonPhase + MINOR_CONSTELLATION_SHIFT) % MOON_PHASE_SIZE + MOON_PHASE_SIZE) % MOON_PHASE_SIZE;
         if moonPhase == targetMoonPhase then
           return true
         end
@@ -178,20 +181,17 @@ end
 -- Gets Minecraft's day starting at 0.
 -- The day starts and increments at sunrize.
 function getDay(dayTime)
-  dayTime = dayTime or getDayTime()
   return math.floor(dayTime / TICKS_PER_DAY)
 end
 
 -- Gets Minecraft's time of day in ticks.
 -- Normally 0 is Sunrise, 6000 Midday, 12000 Sunset and 18000 Midnight.
 function getTimeOfDay(dayTime)
-  dayTime = dayTime or getDayTime()
   return dayTime % TICKS_PER_DAY
 end
 
 -- Gets the moon phase
 function getMoonPhase(dayTime)
-  dayTime = dayTime or getDayTime()
   return (math.floor(dayTime / TICKS_PER_DAY) % MOON_PHASE_SIZE + MOON_PHASE_SIZE) % MOON_PHASE_SIZE;
 end
 
@@ -206,37 +206,55 @@ end
 
 term.clear()
 term.setCursorPos(1, 1)
-print("Day: " .. getDay() .. " Time: " .. getTimeOfDay())
-print("Moon: " .. getMoonPhase() .. " " .. MOON_PHASE_DESCS[getMoonPhase()])
+local now = getDayTime()
+print("Day: " .. getDay(now) .. " Time: " .. getTimeOfDay(now))
+print("Moon: " .. getMoonPhase(now) .. " " .. MOON_PHASE_DESCS[getMoonPhase(now)])
 local _, rInitial = term.getCursorPos()
 rInitial = rInitial + 1
 local width = 0
-for i, constellation in pairs(CONSTELLATIONS_ORDERED) do
-  term.setCursorPos(1, rInitial + i - 1)
+for cstIndex, constellation in pairs(CONSTELLATIONS_ORDERED) do
+  term.setCursorPos(1, rInitial + cstIndex - 1)
   term.write(constellation.name)
   local c, r = term.getCursorPos()
   width = math.max(width, c)
 end
-width = width + 2
+width = width + 1
 local origTextColor = term.getTextColor()
-for i, constellation in pairs(CONSTELLATIONS_ORDERED) do
-  term.setCursorPos(width, rInitial + i - 1)
+for cstIndex, constellation in pairs(CONSTELLATIONS_ORDERED) do
+  term.setCursorPos(width, rInitial + cstIndex - 1)
+  local next = -1
   local till = -1
-  local now = getDayTime()
-  for i = 0, SOLAR_ECLIPSE_CYCLE_LENGTH do
-    local later = now + i * TICKS_PER_DAY
-    if constellation.doesShowUp(later) then
-      till = i
+  for dayOffset = 0, SOLAR_ECLIPSE_CYCLE_LENGTH do
+    local later = now + dayOffset * TICKS_PER_DAY
+    if next == 0 and not constellation.doesShowUp(later) then
+      till = dayOffset
       break
+    elseif next == -1 and constellation.doesShowUp(later) then
+      next = dayOffset
+      till = dayOffset + 1
+      if next > 0 then
+        break
+      end
     end
   end
-  if till == -1 then
+  if next == -1 then
     term.write("Unknown")
-  elseif till == 0 then
-    term.write("Tonight!~")
+  elseif next == 0 then
+    local remaining = till - next
+    if remaining == 1 then
+      term.write("Tonight!~")
+    elseif remaining == 2 then
+      term.write("Tonight and 1 day")
+    else
+      term.write("Tonight and " .. tostring(remaining - 1) .. " days")
+    end
   else
     term.setTextColor(colors.gray)
-    term.write("in " .. tostring(till) .. " days")
+    if next == 1 then
+      term.write("Tomorrow night")
+    else
+      term.write("in " .. tostring(next) .. " days")
+    end
     term.setTextColor(origTextColor)
   end
 end

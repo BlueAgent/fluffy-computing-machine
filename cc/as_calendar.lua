@@ -116,7 +116,7 @@ function Minor:new(name, color, moonPhases)
     color = color,
     doesShowUp = function(dayTime)
       targetMoonPhase = getMoonPhase(dayTime)
-      for moonPhase in moonPhases do
+      for _, moonPhase in pairs(moonPhases) do
         if moonPhase == targetMoonPhase then
           return true
         end
@@ -151,6 +151,10 @@ local Constellations = {
     local moonPhase = getMoonPhase(dayTime)
     return moonPhase == MoonPhase.NEW or moonPhase == MoonPhase.FULL
   end)),
+  gelu       = register(Minor:new("gelu", CONSTELLATION_GELU, {MoonPhase.NEW, MoonPhase.WAXING_1_4, MoonPhase.WAXING_1_2})),
+  ulteria    = register(Minor:new("ulteria", CONSTELLATION_ULTERIA, {MoonPhase.WANING_1_2, MoonPhase.WANING_3_4, MoonPhase.NEW})),
+  alcara     = register(Minor:new("alcara", CONSTELLATION_ALCARA, {MoonPhase.WANING_1_2, MoonPhase.WAXING_1_2})),
+  vorux      = register(Minor:new("vorux", CONSTELLATION_VORUX, {MoonPhase.FULL, MoonPhase.WAXING_3_4, MoonPhase.WANING_3_4})),
 }
 
 -- Day 0: Time 0 ticks
@@ -200,8 +204,39 @@ function isMoonPhaseInRange(moonPhase, range)
   end
 end
 
-print("DayTime: " .. getDayTime() .. " Day: " .. getDay() .. " Time: " .. getTimeOfDay())
-print("MoonPhase: " .. getMoonPhase() .. " " .. MOON_PHASE_DESCS[getMoonPhase()])
-for i, c in pairs(CONSTELLATIONS_ORDERED) do
-  print(tostring(c.doesShowUp()) .. " " .. c.name)
+term.clear()
+term.setCursorPos(1, 1)
+print("Day: " .. getDay() .. " Time: " .. getTimeOfDay())
+print("Moon: " .. getMoonPhase() .. " " .. MOON_PHASE_DESCS[getMoonPhase()])
+local _, rInitial = term.getCursorPos()
+rInitial = rInitial + 1
+local width = 0
+for i, constellation in pairs(CONSTELLATIONS_ORDERED) do
+  term.setCursorPos(1, rInitial + i - 1)
+  term.write(constellation.name)
+  local c, r = term.getCursorPos()
+  width = math.max(width, c)
+end
+width = width + 2
+local origTextColor = term.getTextColor()
+for i, constellation in pairs(CONSTELLATIONS_ORDERED) do
+  term.setCursorPos(width, rInitial + i - 1)
+  local till = -1
+  local now = getDayTime()
+  for i = 0, SOLAR_ECLIPSE_CYCLE_LENGTH do
+    local later = now + i * TICKS_PER_DAY
+    if constellation.doesShowUp(later) then
+      till = i
+      break
+    end
+  end
+  if till == -1 then
+    term.write("Unknown")
+  elseif till == 0 then
+    term.write("Tonight!~")
+  else
+    term.setTextColor(colors.gray)
+    term.write("in " .. tostring(till) .. " days")
+    term.setTextColor(origTextColor)
+  end
 end

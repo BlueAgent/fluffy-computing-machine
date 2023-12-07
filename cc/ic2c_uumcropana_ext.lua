@@ -1,7 +1,7 @@
+-- The uu crop library needs to be below the turtle.
+-- Output needs to be in front.
 local CROP_SEED_SLOT = 0 + 1
-local outputSide = "front"
-local uumCropAnaPushSide = "top"
-local uumCropAna = peripheral.wrap("ic2:uu_crop_library")
+local uumCropAna = peripheral.find("ic2:uu_crop_library")
 
 local running = true
 local function loopMain()
@@ -10,14 +10,15 @@ local function loopMain()
     os.sleep(2)
     local currentItem = uumCropAna.getItemDetail(CROP_SEED_SLOT)
     if currentItem ~= nil and lastItem ~= currentItem then
-      local numMoved = uumCropAna.pushItems(uumCropAnaPushSide, CROP_SEED_SLOT, turtle.getSelectedSlot())
-      if numMoved > 0 then
-        print(("Moved %ix %s to Turtle"):format(numMoved, currentItem.displayName))
+      if turtle.suckDown() then
+        print(("Moved %s to Turtle"):format(currentItem.displayName))
       end
     end
-    local numMoved = turtle.pushItems(outputSide, turtle.getSelectedSlot())
-    if numMoved > 0 then
-      print(("Moved %ix %s from Turtle"):format(numMoved, currentItem.displayName))
+    if turtle.detect() then
+      currentItem = turtle.getItemDetail(turtle.getSelectedSlot())
+      if turtle.drop() then
+        print(("Moved %ix %s from Turtle"):format(currentItem.count, currentItem.displayName))
+      end
     end
     lastItem = currentItem
   end

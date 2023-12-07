@@ -11,7 +11,7 @@ elseif not coil then
 end
 
 local running = true
-function loopMain()
+local function loopMain()
   while running do
     local event, p1 = os.pullEventRaw()
     if event == 'terminate' then
@@ -25,7 +25,7 @@ function loopMain()
 end
 
 -- TODO: Have this handle first stage stuff as well
-function checkIntermediateStacks(input, output)
+local function checkIntermediateStacks(input, output)
   if input['id'] ~= output['id'] then
     return false  
   end
@@ -48,7 +48,7 @@ end
 
 local OFFSET_OUTPUT = 4
 local lastStageMostWork = 0
-function loopSetCVTCoil()
+local function loopSetCVTCoil()
   while running do
     os.sleep(0)
 
@@ -77,8 +77,8 @@ function loopSetCVTCoil()
         end
       end
     end
-    
-    stageMostWork = 1
+
+    local stageMostWork = 1
     for stage=2,4 do
       if work[stage] > work[stageMostWork] then
         stageMostWork = stage
@@ -87,7 +87,7 @@ function loopSetCVTCoil()
     if work[stageMostWork] == 0 then
       stageMostWork = 0
     end
-    
+
     if lastStageMostWork ~= stageMostWork then
       lastStageMostWork = stageMostWork
       if stageMostWork == 0 then
@@ -120,7 +120,7 @@ function loopSetCVTCoil()
   end
 end
 
-function loopOutput()
+local function loopOutput()
   while running do
     ex.pushItem('UP', 8)
     ex.pushItem('UP', 9)
@@ -128,4 +128,4 @@ function loopOutput()
   end
 end
 
-parallel.waitForAll(loopMain, loopSetCVTCoil)
+parallel.waitForAll(loopMain, loopSetCVTCoil, loopOutput)

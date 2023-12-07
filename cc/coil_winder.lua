@@ -20,6 +20,7 @@ while true do
   if coil then
     targetCharge = coil.dmg + 1
   end
+  local running
   if targetCharge <= 32000 and targetCharge > 0 then
     local torqueReq = targetCharge * COIL_STIFFNESS
     local cvtReq = -1

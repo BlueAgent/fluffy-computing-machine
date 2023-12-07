@@ -43,11 +43,11 @@ local running = true
 local previousStacks = {}
 local stuckSlots = {8,9}
 local STUCK_STACK_LIMIT = 8
-function isStuck(stacks)
+local function isStuck(stacks)
   local pStacks = previousStacks
   previousStacks = stacks
   if stacks then
-    same = 0
+    local same = 0
     for _, slot in pairs(stuckSlots) do
       local prev = pStacks[slot]
       local curr = stacks[slot]
@@ -62,7 +62,7 @@ function isStuck(stacks)
   return false
 end
 
-function hasWork(stacks)
+local function hasWork(stacks)
   for slot=1,4 do
     if stacks[slot] then
       return true
@@ -74,7 +74,7 @@ end
 local shouldRunLast = false
 local stuckCounter = 0
 local STUCK_LIMIT = 3
-function hasAndCanWork()
+local function hasAndCanWork()
   local stacks = ex.getAllStacks()
   if not stacks then stacks = {} end
   local shouldRun = false
@@ -103,7 +103,7 @@ function hasAndCanWork()
   return shouldRun
 end
 
-function runCycle()
+local function runCycle()
   if hasAndCanWork() then
     coil.setSpeed(4096)
     cvt.setRatio(-2)
@@ -124,7 +124,7 @@ function runCycle()
 end
 
 -- ComputerCraft Specific
-function cc_loopMain()
+local function cc_loopMain()
   while running do
     local event, p1 = os.pullEventRaw()
     if event == "terminate" then
@@ -137,18 +137,18 @@ function cc_loopMain()
   end
 end
 
-function cc_loopSetCVTCoil()
+local function cc_loopSetCVTCoil()
   while running do
     runCycle()
   end
 end
 
-function cc_main()
+local function cc_main()
   parallel.waitForAll(cc_loopMain, cc_loopSetCVTCoil)
 end
 
 -- OpenComputers Specific
-function oc_main()
+local function oc_main()
   while running do
     runCycle()
   end

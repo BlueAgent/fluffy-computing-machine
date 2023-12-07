@@ -1,7 +1,7 @@
 local me = peripheral.find('tileinterface')
 local suckDelay = 0
 -- return an array of import attempts (I think up to 9)
-function getImportCommands()
+local function getImportCommands()
   local direction = 'DOWN'
   return {
     {dir=direction, slot=8},
@@ -30,7 +30,7 @@ for _, v in pairs(histories) do
   v['avgs'] = 0
 end
 
-function updateHistory()
+local function updateHistory()
   for _, v in pairs(histories) do
     local hist = v['hist']
     local size = v['size']
@@ -55,7 +55,7 @@ function updateHistory()
 end
 
 local running = true
-function loopMain()
+local function loopMain()
   local timerHistory = os.startTimer(1)
   while running do
     local event, p1 = os.pullEventRaw()
@@ -72,7 +72,7 @@ function loopMain()
   end
 end
 
-function loopSuck()
+local function loopSuck()
   while running do
     local num = 0
     for _, v in pairs(getImportCommands()) do
@@ -88,7 +88,7 @@ function loopSuck()
 end
 
 local displayKeys = {'name', 'avg', 'sum'}
-function loopDisplay()
+local function loopDisplay()
   while running do
     term.clear()
     local column = 1

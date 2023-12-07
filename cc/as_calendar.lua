@@ -74,6 +74,11 @@ function Constellation:new(o)
   return o
 end
 
+-- Forward Defined
+local isMoonPhaseInRange
+local getMoonPhase
+local getDay
+
 local Major = Constellation:new()
 function Major:new(name, color)
   local o = {
@@ -116,7 +121,7 @@ function Minor:new(name, color, moonPhases)
     name = name,
     color = color,
     doesShowUp = function(dayTime)
-      targetMoonPhase = getMoonPhase(dayTime)
+      local targetMoonPhase = getMoonPhase(dayTime)
       for _, moonPhase in pairs(moonPhases) do
         -- Minor constellations are shifted but they have the same relative appearences
         moonPhase = ((moonPhase + MINOR_CONSTELLATION_SHIFT) % MOON_PHASE_SIZE + MOON_PHASE_SIZE) % MOON_PHASE_SIZE;
@@ -133,7 +138,7 @@ function Minor:new(name, color, moonPhases)
 end
 
 local CONSTELLATIONS_ORDERED = {}
-function register(constellation)
+local function register(constellation)
   table.insert(CONSTELLATIONS_ORDERED, constellation)
 end
 local Constellations = {
@@ -174,29 +179,29 @@ local Constellations = {
 --     CC Day 2, Time 06.000 (Sunrise)
 
 -- Gets Minecraft's total day time value in ticks.
-function getDayTime()
+local function getDayTime()
   return (os.day() - 1) * TICKS_PER_DAY + os.time() * TICKS_PER_HOUR + SUNRIZE_OFFSET
 end
 
 -- Gets Minecraft's day starting at 0.
 -- The day starts and increments at sunrize.
-function getDay(dayTime)
+local function getDay(dayTime)
   return math.floor(dayTime / TICKS_PER_DAY)
 end
 
 -- Gets Minecraft's time of day in ticks.
 -- Normally 0 is Sunrise, 6000 Midday, 12000 Sunset and 18000 Midnight.
-function getTimeOfDay(dayTime)
+local function getTimeOfDay(dayTime)
   return dayTime % TICKS_PER_DAY
 end
 
 -- Gets the moon phase
-function getMoonPhase(dayTime)
+local function getMoonPhase(dayTime)
   return (math.floor(dayTime / TICKS_PER_DAY) % MOON_PHASE_SIZE + MOON_PHASE_SIZE) % MOON_PHASE_SIZE;
 end
 
 -- Checks if the the moon phase is in the range
-function isMoonPhaseInRange(moonPhase, range)
+local function isMoonPhaseInRange(moonPhase, range)
   if range.from <= range.to then
     return range.from <= moonPhase and moonPhase <= range.to
   else

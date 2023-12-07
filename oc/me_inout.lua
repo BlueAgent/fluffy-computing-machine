@@ -5,11 +5,11 @@ if not me then
   error("Missing ME Interface")
 end
 
-function doPull()
+local function doPull()
   return me.pullItem("DOWN", 8) + me.pullItem("DOWN", 9)
 end
 
-function doPush()
+local function doPush()
   local exported = me.exportItem({id="minecraft:iron_ore"}, "DOWN")
   return exported.size
 end
@@ -39,7 +39,7 @@ for _, task in pairs(tasks) do
   avgData["i"] = 1
   local hist = {}
   avgData["hist"] = hist
-  for i=1, averagesMaxSize do
+  for i=1, #tasks do
     hist[i] = 0
   end
   local avgs = {}
@@ -55,8 +55,8 @@ end
 
 local histLastUpdate = os.time()
 while true do
-  event, p1, p2, p3, p4 = event.pull(0.05)
-  if event == "interrupted" then
+  local e, _, _, _, _ = event.pull(0.05)
+  if e == "interrupted" then
     break
   end
   for _, task in pairs(tasks) do
@@ -69,5 +69,5 @@ while true do
   local time = os.time()
   if time > histLastUpdate + 1 then
     histLastUpdate = histLastUpdate + 1
-  do
+  end
 end

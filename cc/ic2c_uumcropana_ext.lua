@@ -10,16 +10,13 @@ local function loopMain()
   while running do
     os.sleep(2)
     local currentItem = uumCropAna.getItemDetail(CROP_SEED_SLOT)
-    if lastItem == currentItem then
-      if currentItem ~= nil then
-        local numMoved = outputInv.pullItems(uumCropAnaName, CROP_SEED_SLOT)
-        if numMoved > 0 then
-          print(("Moved %ix %s"):format(numMoved, currentItem.displayName))
-        end
+    if currentItem ~= nil and lastItem ~= currentItem then
+      local numMoved = outputInv.pullItems(uumCropAnaName, CROP_SEED_SLOT)
+      if numMoved > 0 then
+        print(("Moved %ix %s"):format(numMoved, currentItem.displayName))
       end
-    else
-      lastItem = currentItem
     end
+    lastItem = currentItem
   end
 end
 

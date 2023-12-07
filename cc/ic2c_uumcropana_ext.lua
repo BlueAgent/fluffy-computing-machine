@@ -8,19 +8,22 @@ local function loopMain()
   local lastItem = nil
   while running do
     os.sleep(2)
+
     local currentItem = uumCropAna.getItemDetail(CROP_SEED_SLOT)
-    if currentItem ~= nil and lastItem ~= currentItem then
+    if currentItem ~= nil and lastItem == currentItem then
       if turtle.suckDown() then
-        print(("Moved %s to Turtle"):format(currentItem.displayName))
+        lastItem = nil
+      else
+        lastItem = uumCropAna.getItemDetail(CROP_SEED_SLOT)
       end
+    else
+      lastItem = currentItem
     end
-    if turtle.detect() then
-      currentItem = turtle.getItemDetail(turtle.getSelectedSlot())
-      if turtle.drop() then
-        print(("Moved %ix %s from Turtle"):format(currentItem.count, currentItem.displayName))
-      end
+
+    local selectedItem = turtle.getItemDetail(turtle.getSelectedSlot(), true)
+    if selectedItem ~= nil and turtle.drop() then
+      print(("Moved %ix %s"):format(selectedItem.count, selectedItem.displayName))
     end
-    lastItem = currentItem
   end
 end
 

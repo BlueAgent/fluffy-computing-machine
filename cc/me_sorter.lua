@@ -9,9 +9,9 @@ local BULK_MIN = 512
 -- Items less than or equal to this get moved to Smol Network.
 local SMOL_MAX = 64
 -- Direction to push items out of the Bulk Network (and into the Smol Network).
-local BULK_PUSH_SIDE = "top"
+local BULK_PUSH_SIDE = "front"
 -- Direction to push items out of the Smol Network (and into the Bulk Network).
-local SMOL_PUSH_SIDE = "top"
+local SMOL_PUSH_SIDE = "front"
 
 if peripheral.getType(BULK_SIDE) ~= "meBridge" then
     print(("Could not find Bulk ME Bridge on the %s side."):format(BULK_SIDE))
@@ -32,13 +32,13 @@ local function loopMain()
     local totalAmounts = {}
     local bulkAmounts = {}
     local smolAmounts = {}
-    for item in meBulk.listItems() do
+    for _, item in pairs(meBulk.listItems()) do
       if item.fingerprint ~= nil then
         bulkAmounts[item.fingerprint] = item.amount
         totalAmounts[item.fingerprint] = item.amount
       end
     end
-    for item in meSmol.listItems() do
+    for _, item in pairs(meSmol.listItems()) do
       if item.fingerprint ~= nil then
         smolAmounts[item.fingerprint] = item.amount
         local newTotal = totalAmounts[item.fingerprint]
@@ -50,7 +50,7 @@ local function loopMain()
         totalAmounts[item.fingerprint] = newTotal
       end
     end
-    for fingerprint, amount in totalAmounts do
+    for fingerprint, amount in pairs(totalAmounts) do
       if not running then
         break
       end
@@ -60,7 +60,7 @@ local function loopMain()
         local numExported = 0
         while running do
           local item = meBulk.getItem(filter);
-          if item == nil or item.amount <= 0 then
+          if item == nil or item.amount == nil or item.amount <= 0 then
             break
           end
 
@@ -77,7 +77,7 @@ local function loopMain()
         local numExported = 0
         while running do
           local item = meSmol.getItem(filter);
-          if item == nil or item.amount <= 0 then
+          if item == nil or item.amount == nil or item.amount <= 0 then
             break
           end
 

@@ -29,60 +29,60 @@ local running = true
 
 local function loopMain()
   while running do
-    local total = {}
-    local bulk = {}
-    local smol = {}
-    for item in bulk.listItems() do
+    local totalAmounts = {}
+    local bulkAmounts = {}
+    local smolAmounts = {}
+    for item in meBulk.listItems() do
       if item.fingerprint ~= nil then
-        bulk[item.fingerprint] = item.amount
-        total[item.fingerprint] = item.amount
+        bulkAmounts[item.fingerprint] = item.amount
+        totalAmounts[item.fingerprint] = item.amount
       end
     end
-    for item in smol.listItems() do
+    for item in meSmol.listItems() do
       if item.fingerprint ~= nil then
-        smol[item.fingerprint] = item.amount
-        local newTotal = total[item.fingerprint]
+        smolAmounts[item.fingerprint] = item.amount
+        local newTotal = totalAmounts[item.fingerprint]
         if newTotal == nil then
           newTotal = item.amount
         else
           newTotal = newTotal + item.amount
         end
-        total[item.fingerprint] = newTotal
+        totalAmounts[item.fingerprint] = newTotal
       end
     end
-    for fingerprint, amount in total do
+    for fingerprint, amount in totalAmounts do
       if not running then
         break
       end
-      if amount <= SMOL_MAX and bulk[fingerprint] ~= nil then
+      if amount <= SMOL_MAX and bulkAmounts[fingerprint] ~= nil then
         local filter = {fingerprint = fingerprint}
         local lastItem = nil
         local numExported = 0
         while running do
-          local item = bulk.getItem(filter);
+          local item = meBulk.getItem(filter);
           if item == nil or item.amount <= 0 then
             break
           end
 
           lastItem = item
-          numExported = numExported + bulk.exportItem({fingerprint = fingerprint}, BULK_PUSH_SIDE)
+          numExported = numExported + meBulk.exportItem({fingerprint = fingerprint}, BULK_PUSH_SIDE)
         end
         if lastItem ~= nil and numExported > 0 then
           print(("Moved %ix %s from Bulk to Smol"):format(numExported, lastItem.displayName))
         end
       end
-      if amount >= BULK_MIN and smol[fingerprint] ~= nil then
+      if amount >= BULK_MIN and smolAmounts[fingerprint] ~= nil then
         local filter = {fingerprint = fingerprint}
         local lastItem = nil
         local numExported = 0
         while running do
-          local item = smol.getItem(filter);
+          local item = meSmol.getItem(filter);
           if item == nil or item.amount <= 0 then
             break
           end
 
           lastItem = item
-          numExported = numExported + smol.exportItem({fingerprint = fingerprint}, SMOL_PUSH_SIDE)
+          numExported = numExported + meSmol.exportItem({fingerprint = fingerprint}, SMOL_PUSH_SIDE)
         end
         if lastItem ~= nil and numExported > 0 then
           print(("Moved %ix %s from Smol to Bulk"):format(numExported, lastItem.displayName))

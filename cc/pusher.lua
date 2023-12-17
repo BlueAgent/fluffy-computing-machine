@@ -14,7 +14,9 @@ local running = true
 
 local function pushItems(slot)
   local num = inv.pushItems(DST_NAME, slot)
-  print(("Moved %ix from slot %i"):format(num, slot))
+  if num > 0 then
+    print(("Moved %ix from slot %i"):format(num, slot))
+  end
 end
 
 local function loopMain()

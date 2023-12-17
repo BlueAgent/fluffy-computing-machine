@@ -89,6 +89,7 @@ local function loopMain()
         end
       end
     end
+    os.sleep(10)
   end
 end
 

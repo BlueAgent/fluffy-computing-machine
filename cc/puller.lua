@@ -23,19 +23,22 @@ local function pullItems(slot)
   if num > 0 then
     print(("Moved %ix from slot %i"):format(num, slot))
   end
+  return num
 end
 
 local function loopMain()
   if #SRC_SLOTS > 0 then
     while running do
       for _, slot in ipairs(SRC_SLOTS) do
-        pullItems(slot)
+        while pullItems(slot) > 0 do
+        end
       end
     end
   else
     while running do
       for slot=1,src.size() do
-        pullItems(slot)
+        while pullItems(slot) > 0 do
+        end
       end
     end
   end

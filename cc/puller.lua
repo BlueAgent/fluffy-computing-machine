@@ -1,34 +1,40 @@
--- Pull items to specific slots
+-- Pull items from specific slots
 
-local DST_NAME = "right"
-local DST_SLOTS = {}
-local SRC_NAME = "top"
+local SRC_NAME = "right"
+local SRC_SLOTS = {}
+local DST_NAME = "left"
+
+if not peripheral.hasType(SRC_NAME, "inventory") then
+  print(("Could not find an inventory on the %s side."):format(DST_NAME))
+  return
+end
 
 if not peripheral.hasType(DST_NAME, "inventory") then
     print(("Could not find an inventory on the %s side."):format(DST_NAME))
     return
 end
 
-local inv = peripheral.wrap(DST_NAME)
+local src = peripheral.wrap(SRC_NAME)
+local dst = peripheral.wrap(DST_NAME)
 local running = true
 
 local function pullItems(slot)
-  local num = inv.pullItems(SRC_NAME, slot)
+  local num = dst.pullItems(SRC_NAME, slot)
   if num > 0 then
-    print(("Moved %ix to slot %i"):format(num, slot))
+    print(("Moved %ix from slot %i"):format(num, slot))
   end
 end
 
 local function loopMain()
-  if #DST_SLOTS > 0 then
+  if #SRC_SLOTS > 0 then
     while running do
-      for _, slot in ipairs(DST_SLOTS) do
+      for _, slot in ipairs(SRC_SLOTS) do
         pullItems(slot)
       end
     end
   else
     while running do
-      for slot=1,inv.size() do
+      for slot=1,src.size() do
         pullItems(slot)
       end
     end

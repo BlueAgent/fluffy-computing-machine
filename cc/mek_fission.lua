@@ -22,7 +22,7 @@ local function scram()
 end
 
 local function activate()
-  if reactor.getStatus() then
+  if not reactor.getStatus() then
     print("Activating")
     reactor.activate()
   end

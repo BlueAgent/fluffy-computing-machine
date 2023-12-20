@@ -39,11 +39,11 @@ local function isSafeToRun()
   else
     coolantHeatingRate = maxBurnRate * 200000
   end
-  if coolant.amount < coolantHeatingRate * 2 then
+  if coolant.amount < coolantHeatingRate then
     return false, "Not Enough Coolant"
   end
   local heatedCoolant = reactor.getHeatedCoolant()
-  if heatedCoolant.amount >= coolantHeatingRate * 2 then
+  if heatedCoolant.amount > coolantHeatingRate then
     return false, "No Space for Heated Coolant"
   end
   if reactor.getWasteNeeded() <= maxBurnRate * 2 then

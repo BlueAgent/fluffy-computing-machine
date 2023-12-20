@@ -1,14 +1,9 @@
 -- Mekanism Fusion Reactor Controller
 
--- Reactor Logic Port
-local REACTOR_NAME = "back"
+-- Reactor Logic Port. Make sure exactly one exists on the network.
+local REACTOR_LOGIC_PORT_TYPE = "fissionReactorLogicAdapter"
 
-if not peripheral.hasType(REACTOR_NAME, "fissionReactorLogicAdapter") then
-  print(("Could not find reactor logic adapter named '%s'. Make sure a logic port is connected to the network under that name."):format(REACTOR_NAME))
-  return
-end
-
-local reactor = peripheral.wrap(REACTOR_NAME)
+local reactor
 local running = true
 local lastStatus = nil
 
@@ -82,11 +77,17 @@ local function loopEvent()
 end
 
 while running do
+  reactor = peripheral.find(REACTOR_LOGIC_PORT_TYPE)
+  if not reactor then
+    print(("Could not find fission reactor logic adapter (type '%s'). Make sure a fission reactor logic port is connected to the network."):format(REACTOR_LOGIC_PORT_TYPE))
+    return
+  end
   local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
   scram()
   if not status then
     io.stderr:write("Error: ", result)
   end
+  os.sleep(1)
 end
 
 scram()

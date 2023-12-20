@@ -13,7 +13,8 @@ local running = true
 local lastStatus = nil
 
 local function scram()
-  if reactor.getStatus() then
+  local getStatusSuccess, getStatusResult = pcall(reactor.getStatus)
+  if getStatusSuccess and getStatusResult then
     print("Scramming")
   end
   -- We call it and ignore if it fails just in-case.
@@ -21,7 +22,7 @@ local function scram()
 end
 
 local function activate()
-  if not reactor.getStatus() then
+  if reactor.getStatus() then
     print("Activating")
     reactor.activate()
   end
@@ -80,9 +81,13 @@ local function loopEvent()
   end
 end
 
-local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
-scram()
-
-if not status then
-  io.stderr:write("Exited with error: ", result)
+while running do
+  local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
+  scram()
+  if not status then
+    io.stderr:write("Error: ", result)
+  end
 end
+
+scram()
+print("Finally Terminated")

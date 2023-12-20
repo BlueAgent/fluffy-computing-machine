@@ -3,7 +3,7 @@
 -- Reactor Logic Port
 local REACTOR_NAME = "back"
 
-if not peripheral.hasType(REACTOR_NAME, "fissionReactorLoginAdapter") then
+if not peripheral.hasType(REACTOR_NAME, "fissionReactorLogicAdapter") then
   print(("Could not find reactor logic adapter named '%s'. Make sure a logic port is connected to the network under that name."):format(REACTOR_NAME))
   return
 end

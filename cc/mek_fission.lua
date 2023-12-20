@@ -4,8 +4,8 @@
 local REACTOR_LOGIC_PORT_TYPE = "fissionReactorLogicAdapter"
 
 local reactor
+local lastStatus
 local running = true
-local lastStatus = nil
 
 local function scram()
   local getStatusSuccess, getStatusResult = pcall(reactor.getStatus)
@@ -78,6 +78,7 @@ end
 
 while running do
   reactor = peripheral.find(REACTOR_LOGIC_PORT_TYPE)
+  lastStatus = nil
   if not reactor then
     print(("Could not find fission reactor logic adapter (type '%s'). Make sure a fission reactor logic port is connected to the network."):format(REACTOR_LOGIC_PORT_TYPE))
     return
@@ -85,10 +86,10 @@ while running do
   local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
   scram()
   if not status then
-    io.stderr:write("Error: ", result)
+    io.stderr:write("Error: ", result, "\n")
   end
   os.sleep(1)
 end
 
 scram()
-print("Finally Terminated")
+print("Actually Exited")

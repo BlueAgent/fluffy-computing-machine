@@ -11,7 +11,21 @@ end
 local reactor = peripheral.wrap(REACTOR_NAME)
 local running = true
 local lastStatus = nil
-local scramming = false
+
+local function scram()
+  if reactor.getStatus() then
+    print("Scramming")
+  end
+  -- We call it and ignore if it fails just in-case.
+  pcall(reactor.scram)
+end
+
+local function activate()
+  if not reactor.getStatus() then
+    print("Activating")
+    reactor.activate()
+  end
+end
 
 local function isSafeToRun()
   if reactor.getDamagePercent() > 0 then
@@ -42,25 +56,16 @@ local function loopScram()
   while running do
     local safe, status = isSafeToRun()
     if not safe then
-      reactor.scram()
-      if not scramming then
-        scramming = true
-        print("Scramming!")
-      end
+      scram()
     else
-      reactor.activate()
-      if scramming then
-        scramming = false
-        print("Activating...")
-      end
+      activate()
     end
     if lastStatus ~= status then
       lastStatus = status
       print("Status: " .. status)
     end
   end
-  reactor.scram()
-  scramming = true
+  scram()
 end
 
 local function loopEvent()
@@ -70,14 +75,14 @@ local function loopEvent()
     if event == 'terminate' then
       running = false
       print("Bye bye~")
-      reactor.scram()
+      scram()
       break
     end
   end
 end
 
 local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
-reactor.scram()
+scram()
 
 if not status then
   io.stderr:write("Exited with error: ", result)

@@ -71,7 +71,7 @@ local function loopMain()
         os.sleep(0)
       end
       if amount >= BULK_MIN and smolAmounts[fingerprint] ~= nil then
-        doMove(bulkMeBridge, smolInput, "Bulk to Smol", fingerprint)
+        doMove(smolMeBridge, bulkInput, "Smol to Bulk", fingerprint)
         os.sleep(0)
       end
     end

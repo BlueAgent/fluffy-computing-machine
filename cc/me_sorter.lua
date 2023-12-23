@@ -57,7 +57,7 @@ local function loopMain()
           end
 
           lastItem = item
-          numExported = numExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, smolInput)
+          numExported = numExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(smolInput))
         end
         if lastItem ~= nil and numExported > 0 then
           print(("Moved %ix %s from Bulk to Smol"):format(numExported, lastItem.displayName))
@@ -74,7 +74,7 @@ local function loopMain()
           end
 
           lastItem = item
-          numExported = numExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, bulkInput)
+          numExported = numExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(bulkInput))
         end
         if lastItem ~= nil and numExported > 0 then
           print(("Moved %ix %s from Smol to Bulk"):format(numExported, lastItem.displayName))

@@ -26,7 +26,7 @@ local function doMove(fromMeBridge, toInput, directionText, fingerprint)
   if itemToMove == nil or itemToMove.amount == nil or itemToMove.amount <= 0 then
     return
   end
-  filter["count"] = itemToMove.amount
+  filter["count"] = 9 * 64
   local totalExported = 0
   while running do
     local numExported = fromMeBridge.exportItemToPeripheral(filter, peripheral.getName(toInput))
@@ -34,12 +34,12 @@ local function doMove(fromMeBridge, toInput, directionText, fingerprint)
       break
     end
     totalExported = totalExported + numExported
-    term.clearLine()
+    local originalCursorPos = {term.getCursorPos()}
     term.write(("Moved %ix %s from %s"):format(totalExported, itemToMove.displayName, directionText))
+    term.setCursorPos(unpack(originalCursorPos))
     os.sleep(0)
   end
   if totalExported > 0 then
-    term.clearLine()
     print(("Moved %ix %s from %s"):format(totalExported, itemToMove.displayName, directionText))
   end
 end

@@ -76,12 +76,12 @@ local function loopEvent()
   end
 end
 
-while running do
+local function main()
   reactor = peripheral.find(REACTOR_LOGIC_PORT_TYPE)
   lastStatus = nil
   if not reactor then
     print(("Could not find fission reactor logic adapter (type '%s'). Make sure a fission reactor logic port is connected to the network."):format(REACTOR_LOGIC_PORT_TYPE))
-    goto continue
+    return
   end
 
   local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
@@ -89,8 +89,13 @@ while running do
   if not status then
     io.stderr:write("Error: ", result, "\n")
   end
+end
 
-  ::continue::
+while running do
+  local status, result = pcall(main)
+  if not status then
+    io.stderr:write("Error in main(): ", result, "\n")
+  end
   os.sleep(0.05)
 end
 

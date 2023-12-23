@@ -91,13 +91,12 @@ local function loopEvent()
     local event, p1 = os.pullEventRaw()
     if event == 'terminate' then
       running = false
-      print("Bye bye~")
       break
     end
   end
 end
 
-while running do
+local function main()
   bulkMeBridge = peripheral.wrap(BULK_BRIDGE_NAME)
   smolMeBridge = peripheral.wrap(SMOL_BRIDGE_NAME)
   bulkInput = peripheral.wrap(BULK_INPUT_NAME)
@@ -105,29 +104,36 @@ while running do
 
   if not bulkMeBridge or peripheral.hasType(bulkMeBridge, "meBridge") then
     print(("Could not find Bulk ME Bridge on the network with the name '%s'."):format(BULK_BRIDGE_NAME))
-    goto continue
+    return
   end
 
   if not smolMeBridge or peripheral.hasType(smolMeBridge, "meBridge") then
       print(("Could not find Smol ME Bridge on the network with the name '%s'."):format(SMOL_BRIDGE_NAME))
-      goto continue
+      return
   end
 
   if not bulkInput or peripheral.hasType(bulkInput, "inventory") then
     print(("Could not find Bulk Input Inventory on the network with the name '%s'."):format(BULK_INPUT_NAME))
-    goto continue
+    return
   end
 
   if not smolInput or peripheral.hasType(smolInput, "inventory") then
       print(("Could not find Smol Input Inventory on the network with the name '%s'."):format(SMOL_INPUT_NAME))
-      goto continue
+      return
   end
 
   local status, result = pcall(parallel.waitForAll, loopEvent, loopMain)
   if not status then
     io.stderr:write("Error: ", result, "\n")
   end
+end
 
-  ::continue::
+while running do
+  local status, result = pcall(main)
+  if not status then
+    io.stderr:write("Error in main(): ", result, "\n")
+  end
   os.sleep(5)
 end
+
+print("Bye bye~")

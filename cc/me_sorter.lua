@@ -1,30 +1,22 @@
 -- Requires Advanced Peripherals' ME Bridge
 
--- Bulk is the subnetwork where you put items that have a high count.
-local BULK_SIDE = "left"
--- Type is the subnetwork where you put items that have a low count.
-local SMOL_SIDE = "right"
+-- Bulk is the ME Bridge for the subnetwork where you put items that have a high count.
+local BULK_BRIDGE_NAME = "left"
+-- Smol is the ME Bridge for the the subnetwork where you put items that have a low count.
+local SMOL_BRIDGE_NAME = "right"
+-- Peripheral to push items into the Bulk Network (out of the Smol Network).
+local BULK_INPUT_NAME = "ae2:interface_0"
+-- Peripheral to push items into the Smol Network (out of the Bulk Network).
+local SMOL_INPUT_NAME = "ae2:interface_1"
 -- Items greater than or equal to this get moved to Bulk Network.
 local BULK_MIN = 512
 -- Items less than or equal to this get moved to Smol Network.
 local SMOL_MAX = 64
--- Direction to push items out of the Bulk Network (and into the Smol Network).
-local BULK_PUSH_SIDE = "front"
--- Direction to push items out of the Smol Network (and into the Bulk Network).
-local SMOL_PUSH_SIDE = "front"
 
-if peripheral.getType(BULK_SIDE) ~= "meBridge" then
-    print(("Could not find Bulk ME Bridge on the %s side."):format(BULK_SIDE))
-    return
-end
-
-if peripheral.getType(SMOL_SIDE) ~= "meBridge" then
-    print(("Could not find Smol ME Bridge on the %s side."):format(SMOL_SIDE))
-    return
-end
-
-local meBulk = peripheral.wrap(BULK_SIDE)
-local meSmol = peripheral.wrap(SMOL_SIDE)
+local bulkMeBridge
+local smolMeBridge
+local bulkInput
+local smolInput
 local running = true
 
 local function loopMain()
@@ -32,13 +24,13 @@ local function loopMain()
     local totalAmounts = {}
     local bulkAmounts = {}
     local smolAmounts = {}
-    for _, item in pairs(meBulk.listItems()) do
+    for _, item in pairs(bulkMeBridge.listItems()) do
       if item.fingerprint ~= nil then
         bulkAmounts[item.fingerprint] = item.amount
         totalAmounts[item.fingerprint] = item.amount
       end
     end
-    for _, item in pairs(meSmol.listItems()) do
+    for _, item in pairs(smolMeBridge.listItems()) do
       if item.fingerprint ~= nil then
         smolAmounts[item.fingerprint] = item.amount
         local newTotal = totalAmounts[item.fingerprint]
@@ -59,13 +51,13 @@ local function loopMain()
         local lastItem = nil
         local numExported = 0
         while running do
-          local item = meBulk.getItem(filter);
+          local item = bulkMeBridge.getItem(filter);
           if item == nil or item.amount == nil or item.amount <= 0 then
             break
           end
 
           lastItem = item
-          numExported = numExported + meBulk.exportItem({fingerprint = fingerprint}, BULK_PUSH_SIDE)
+          numExported = numExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, smolInput)
         end
         if lastItem ~= nil and numExported > 0 then
           print(("Moved %ix %s from Bulk to Smol"):format(numExported, lastItem.displayName))
@@ -76,13 +68,13 @@ local function loopMain()
         local lastItem = nil
         local numExported = 0
         while running do
-          local item = meSmol.getItem(filter);
+          local item = smolMeBridge.getItem(filter);
           if item == nil or item.amount == nil or item.amount <= 0 then
             break
           end
 
           lastItem = item
-          numExported = numExported + meSmol.exportItem({fingerprint = fingerprint}, SMOL_PUSH_SIDE)
+          numExported = numExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, bulkInput)
         end
         if lastItem ~= nil and numExported > 0 then
           print(("Moved %ix %s from Smol to Bulk"):format(numExported, lastItem.displayName))
@@ -105,4 +97,37 @@ local function loopEvent()
   end
 end
 
-parallel.waitForAll(loopEvent, loopMain)
+while running do
+  bulkMeBridge = peripheral.wrap(BULK_BRIDGE_NAME)
+  smolMeBridge = peripheral.wrap(SMOL_BRIDGE_NAME)
+  bulkInput = peripheral.wrap(BULK_INPUT_NAME)
+  smolInput = peripheral.wrap(SMOL_INPUT_NAME)
+
+  if not bulkMeBridge or peripheral.hasType(bulkMeBridge, "meBridge") then
+    print(("Could not find Bulk ME Bridge on the network with the name '%s'."):format(BULK_BRIDGE_NAME))
+    goto continue
+  end
+
+  if not smolMeBridge or peripheral.hasType(smolMeBridge, "meBridge") then
+      print(("Could not find Smol ME Bridge on the network with the name '%s'."):format(SMOL_BRIDGE_NAME))
+      goto continue
+  end
+
+  if not bulkInput or peripheral.hasType(bulkInput, "inventory") then
+    print(("Could not find Bulk Input Inventory on the network with the name '%s'."):format(BULK_INPUT_NAME))
+    goto continue
+  end
+
+  if not smolInput or peripheral.hasType(smolInput, "inventory") then
+      print(("Could not find Smol Input Inventory on the network with the name '%s'."):format(SMOL_INPUT_NAME))
+      goto continue
+  end
+
+  local status, result = pcall(parallel.waitForAll, loopEvent, loopMain)
+  if not status then
+    io.stderr:write("Error: ", result, "\n")
+  end
+
+  ::continue::
+  os.sleep(5)
+end

@@ -59,6 +59,7 @@ local function loopMain()
 
           lastItem = item
           totalExported = totalExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(smolInput))
+          os.sleep(0)
         end
         if lastItem ~= nil and totalExported > 0 then
           print(("Moved %ix %s from Bulk to Smol"):format(totalExported, lastItem.displayName))
@@ -76,11 +77,13 @@ local function loopMain()
 
           lastItem = item
           totalExported = totalExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(bulkInput))
+          os.sleep(0)
         end
         if lastItem ~= nil and totalExported > 0 then
           print(("Moved %ix %s from Smol to Bulk"):format(totalExported, lastItem.displayName))
         end
       end
+      os.sleep(0)
     end
     os.sleep(10)
   end
@@ -125,6 +128,11 @@ local function main()
 
   local status, result = pcall(parallel.waitForAll, loopEvent, loopMain)
   if not status then
+    if result == "Terminated" then
+      running = false
+      return
+    end
+
     io.stderr:write("Error: ", result, "\n")
   end
 end
@@ -134,7 +142,13 @@ while running do
   if not status then
     io.stderr:write("Error in main(): ", result, "\n")
   end
-  os.sleep(5)
+
+  if running then
+    status, result = os.sleep(5)
+    if result == "Terminated" then
+      running = false
+    end
+  end
 end
 
 print("Bye bye~")

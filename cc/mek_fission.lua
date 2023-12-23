@@ -69,7 +69,6 @@ local function loopEvent()
     local event, p1 = os.pullEventRaw()
     if event == 'terminate' then
       running = false
-      print("Terminating...")
       scram()
       break
     end
@@ -87,6 +86,12 @@ local function main()
   local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
   scram()
   if not status then
+    if result == "Terminated" then
+      running = false
+      scram()
+      return
+    end
+
     io.stderr:write("Error: ", result, "\n")
   end
 end
@@ -96,7 +101,14 @@ while running do
   if not status then
     io.stderr:write("Error in main(): ", result, "\n")
   end
-  os.sleep(0.05)
+
+  if running then
+    status, result = os.sleep(0.05)
+    if result == "Terminated" then
+      running = false
+      scram()
+    end
+  end
 end
 
 scram()

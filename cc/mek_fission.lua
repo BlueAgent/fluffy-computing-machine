@@ -69,7 +69,7 @@ local function loopEvent()
     local event, p1 = os.pullEventRaw()
     if event == 'terminate' then
       running = false
-      print("Bye bye~")
+      print("Terminating...")
       scram()
       break
     end
@@ -81,15 +81,18 @@ while running do
   lastStatus = nil
   if not reactor then
     print(("Could not find fission reactor logic adapter (type '%s'). Make sure a fission reactor logic port is connected to the network."):format(REACTOR_LOGIC_PORT_TYPE))
-    return
+    goto continue
   end
+
   local status, result = pcall(parallel.waitForAll, loopEvent, loopScram)
   scram()
   if not status then
     io.stderr:write("Error: ", result, "\n")
   end
-  os.sleep(1)
+
+  ::continue::
+  os.sleep(0.05)
 end
 
 scram()
-print("Actually Exited")
+print("Bye bye~")

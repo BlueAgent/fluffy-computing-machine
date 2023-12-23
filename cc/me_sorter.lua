@@ -102,22 +102,22 @@ local function main()
   bulkInput = peripheral.wrap(BULK_INPUT_NAME)
   smolInput = peripheral.wrap(SMOL_INPUT_NAME)
 
-  if not bulkMeBridge or peripheral.hasType(bulkMeBridge, "meBridge") then
+  if not bulkMeBridge or not peripheral.hasType(bulkMeBridge, "meBridge") then
     print(("Could not find Bulk ME Bridge on the network with the name '%s'."):format(BULK_BRIDGE_NAME))
     return
   end
 
-  if not smolMeBridge or peripheral.hasType(smolMeBridge, "meBridge") then
+  if not smolMeBridge or not peripheral.hasType(smolMeBridge, "meBridge") then
       print(("Could not find Smol ME Bridge on the network with the name '%s'."):format(SMOL_BRIDGE_NAME))
       return
   end
 
-  if not bulkInput or peripheral.hasType(bulkInput, "inventory") then
+  if not bulkInput or not peripheral.hasType(bulkInput, "inventory") then
     print(("Could not find Bulk Input Inventory on the network with the name '%s'."):format(BULK_INPUT_NAME))
     return
   end
 
-  if not smolInput or peripheral.hasType(smolInput, "inventory") then
+  if not smolInput or not peripheral.hasType(smolInput, "inventory") then
       print(("Could not find Smol Input Inventory on the network with the name '%s'."):format(SMOL_INPUT_NAME))
       return
   end

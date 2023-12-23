@@ -10,9 +10,9 @@ local BULK_INPUT_NAME = "ae2:interface_0"
 -- Peripheral to push items into the Smol Network (out of the Bulk Network).
 local SMOL_INPUT_NAME = "ae2:interface_1"
 -- Items greater than or equal to this get moved to Bulk Network.
-local BULK_MIN = 512
+local BULK_MIN = 4096
 -- Items less than or equal to this get moved to Smol Network.
-local SMOL_MAX = 64
+local SMOL_MAX = 2048
 
 local bulkMeBridge
 local smolMeBridge

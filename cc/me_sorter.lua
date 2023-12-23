@@ -58,7 +58,7 @@ local function loopMain()
           end
 
           lastItem = item
-          totalExported = totalExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(smolInput))
+          totalExported = totalExported + bulkMeBridge.exportItemToPeripheral(filter, peripheral.getName(smolInput))
           os.sleep(0)
         end
         if lastItem ~= nil and totalExported > 0 then
@@ -76,7 +76,7 @@ local function loopMain()
           end
 
           lastItem = item
-          totalExported = totalExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(bulkInput))
+          totalExported = totalExported + smolMeBridge.exportItemToPeripheral(filter, peripheral.getName(bulkInput))
           os.sleep(0)
         end
         if lastItem ~= nil and totalExported > 0 then

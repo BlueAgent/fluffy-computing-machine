@@ -1,9 +1,10 @@
 -- Requires Advanced Peripherals' ME Bridge
 
+-- The following peripherals should be on the same computer network as this computer (and each other).
 -- Bulk is the ME Bridge for the subnetwork where you put items that have a high count.
-local BULK_BRIDGE_NAME = "left"
+local BULK_BRIDGE_NAME = "meBridge_0"
 -- Smol is the ME Bridge for the the subnetwork where you put items that have a low count.
-local SMOL_BRIDGE_NAME = "right"
+local SMOL_BRIDGE_NAME = "meBridge_1"
 -- Peripheral to push items into the Bulk Network (out of the Smol Network).
 local BULK_INPUT_NAME = "ae2:interface_0"
 -- Peripheral to push items into the Smol Network (out of the Bulk Network).
@@ -49,7 +50,7 @@ local function loopMain()
       if amount <= SMOL_MAX and bulkAmounts[fingerprint] ~= nil then
         local filter = {fingerprint = fingerprint}
         local lastItem = nil
-        local numExported = 0
+        local totalExported = 0
         while running do
           local item = bulkMeBridge.getItem(filter);
           if item == nil or item.amount == nil or item.amount <= 0 then
@@ -57,16 +58,16 @@ local function loopMain()
           end
 
           lastItem = item
-          numExported = numExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(smolInput))
+          totalExported = totalExported + bulkMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(smolInput))
         end
-        if lastItem ~= nil and numExported > 0 then
-          print(("Moved %ix %s from Bulk to Smol"):format(numExported, lastItem.displayName))
+        if lastItem ~= nil and totalExported > 0 then
+          print(("Moved %ix %s from Bulk to Smol"):format(totalExported, lastItem.displayName))
         end
       end
       if amount >= BULK_MIN and smolAmounts[fingerprint] ~= nil then
         local filter = {fingerprint = fingerprint}
         local lastItem = nil
-        local numExported = 0
+        local totalExported = 0
         while running do
           local item = smolMeBridge.getItem(filter);
           if item == nil or item.amount == nil or item.amount <= 0 then
@@ -74,10 +75,10 @@ local function loopMain()
           end
 
           lastItem = item
-          numExported = numExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(bulkInput))
+          totalExported = totalExported + smolMeBridge.exportItemToPeripheral({fingerprint = fingerprint}, peripheral.getName(bulkInput))
         end
-        if lastItem ~= nil and numExported > 0 then
-          print(("Moved %ix %s from Smol to Bulk"):format(numExported, lastItem.displayName))
+        if lastItem ~= nil and totalExported > 0 then
+          print(("Moved %ix %s from Smol to Bulk"):format(totalExported, lastItem.displayName))
         end
       end
     end

@@ -20,6 +20,25 @@ local bulkInput
 local smolInput
 local running = true
 
+local function doMove(fromMeBridge, toInput, directionText, fingerprint)
+  local filter = {fingerprint = fingerprint}
+  local itemToMove = fromMeBridge.getItem(filter);
+  if itemToMove == nil or itemToMove.amount == nil or itemToMove.amount <= 0 then
+    return
+  end
+  local totalExported = 0
+  while running do
+    local numExported = fromMeBridge.exportItemToPeripheral(filter, peripheral.getName(toInput))
+    if numExported <= 0 then
+      break
+    end
+    totalExported = totalExported + numExported
+  end
+  if totalExported > 0 then
+    print(("Moved %ix %s from %s"):format(totalExported, itemToMove.displayName, directionText))
+  end
+end
+
 local function loopMain()
   while running do
     local totalAmounts = {}
@@ -48,42 +67,13 @@ local function loopMain()
         break
       end
       if amount <= SMOL_MAX and bulkAmounts[fingerprint] ~= nil then
-        local filter = {fingerprint = fingerprint}
-        local lastItem = nil
-        local totalExported = 0
-        while running do
-          local item = bulkMeBridge.getItem(filter);
-          if item == nil or item.amount == nil or item.amount <= 0 then
-            break
-          end
-
-          lastItem = item
-          totalExported = totalExported + bulkMeBridge.exportItemToPeripheral(filter, peripheral.getName(smolInput))
-          os.sleep(0)
-        end
-        if lastItem ~= nil and totalExported > 0 then
-          print(("Moved %ix %s from Bulk to Smol"):format(totalExported, lastItem.displayName))
-        end
+        doMove(bulkMeBridge, smolInput, "Bulk to Smol", fingerprint)
+        os.sleep(0)
       end
       if amount >= BULK_MIN and smolAmounts[fingerprint] ~= nil then
-        local filter = {fingerprint = fingerprint}
-        local lastItem = nil
-        local totalExported = 0
-        while running do
-          local item = smolMeBridge.getItem(filter);
-          if item == nil or item.amount == nil or item.amount <= 0 then
-            break
-          end
-
-          lastItem = item
-          totalExported = totalExported + smolMeBridge.exportItemToPeripheral(filter, peripheral.getName(bulkInput))
-          os.sleep(0)
-        end
-        if lastItem ~= nil and totalExported > 0 then
-          print(("Moved %ix %s from Smol to Bulk"):format(totalExported, lastItem.displayName))
-        end
+        doMove(bulkMeBridge, smolInput, "Bulk to Smol", fingerprint)
+        os.sleep(0)
       end
-      os.sleep(0)
     end
     os.sleep(10)
   end

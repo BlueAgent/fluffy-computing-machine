@@ -7,6 +7,7 @@ local REDSTONE_OUTPUT_SIDE = "left"
 
 local reactor
 local lastStatus
+local activated = false
 local running = true
 
 local function scram()
@@ -17,10 +18,11 @@ local function scram()
   -- We call it and ignore if it fails just in-case.
   pcall(reactor.scram)
   pcall(redstone.setAnalogOutput, REDSTONE_OUTPUT_SIDE, 0)
+  activated = false
 end
 
 local function activate()
-  if redstone.getAnalogOutput(REDSTONE_OUTPUT_SIDE) ~= 15 then
+  if not activated then
     print("Activating")
     redstone.setAnalogOutput(REDSTONE_OUTPUT_SIDE, 15)
   end
@@ -81,6 +83,8 @@ end
 local function main()
   reactor = peripheral.find(REACTOR_LOGIC_PORT_TYPE)
   lastStatus = nil
+  activated = false
+  scram()
   if not reactor then
     print(("Could not find fission reactor logic adapter (type '%s'). Make sure a fission reactor logic port is connected to the network."):format(REACTOR_LOGIC_PORT_TYPE))
     return

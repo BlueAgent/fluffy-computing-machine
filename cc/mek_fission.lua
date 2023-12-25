@@ -2,6 +2,8 @@
 
 -- Reactor Logic Port. Make sure exactly one exists on the network.
 local REACTOR_LOGIC_PORT_TYPE = "fissionReactorLogicAdapter"
+-- On when reactor should run. Combine with all the other logic being okay as well though.
+local REDSTONE_OUTPUT_SIDE = "left"
 
 local reactor
 local lastStatus
@@ -14,12 +16,13 @@ local function scram()
   end
   -- We call it and ignore if it fails just in-case.
   pcall(reactor.scram)
+  pcall(redstone.setAnalogOutput, REDSTONE_OUTPUT_SIDE, 0)
 end
 
 local function activate()
   if not reactor.getStatus() then
     print("Activating")
-    reactor.activate()
+    redstone.setAnalogOutput(REDSTONE_OUTPUT_SIDE, 15)
   end
 end
 

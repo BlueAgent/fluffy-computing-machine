@@ -20,7 +20,7 @@ local function scram()
 end
 
 local function activate()
-  if not reactor.getStatus() then
+  if redstone.getAnalogOutput(REDSTONE_OUTPUT_SIDE) ~= 15 then
     print("Activating")
     redstone.setAnalogOutput(REDSTONE_OUTPUT_SIDE, 15)
   end
